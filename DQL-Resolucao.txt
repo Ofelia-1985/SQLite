@@ -1,0 +1,65 @@
+
+--1--Consultando nome de clientes e seus respectivos dependentes no banco de dados--
+
+SELECT cd.nome AS 'Dependente', cnd.nome AS 'Cliente' 
+FROM
+(
+SELECT cc1º.id_conta, cl1º.nome, cc1º.dependente
+FROM cliente_conta AS cc1º
+JOIN cliente AS cl1º
+ON cc1º.id_cliente = cl1º.id
+WHERE cc1º.dependente = 1
+ORDER BY cc1º.id_conta
+) AS cd,
+(
+SELECT cc2º.id_conta, cl2º.nome, cc2º.dependente
+FROM cliente_conta AS cc2º
+JOIN cliente AS cl2º
+ON cc2º.id_cliente = cl2º.id
+WHERE cc2º.dependente = 0
+ORDER BY cc2º.id_conta
+) AS cnd
+WHERE cd.id_conta = cnd.id_conta;
+
+--2a-- As 5 contas que mais fizeram transações--
+SELECT co.numero AS 'Conta', COUNT (*) AS 'Qtd_Max_Trans'
+FROM transacao AS t
+JOIN cliente_conta AS cc
+ON cc.id = t.id_cliente_conta
+JOIN conta AS co
+ON co.id = cc.id_conta
+GROUP BY Conta 
+ORDER BY Qtd_Max_Trans DESC
+LIMIT 5;
+
+--2b-- As 5 contas que menos fizeram transações--
+SELECT co.numero AS 'Conta', COUNT (*) AS 'Qtd_Min_Trans'
+FROM transacao AS t
+JOIN cliente_conta AS cc
+ON cc.id = t.id_cliente_conta
+JOIN conta AS co
+ON co.id = cc.id_conta
+GROUP BY Conta
+ORDER BY Qtd_Min_Trans
+LIMIT 5;
+
+--3-- Consultando o saldo total das contas registradas no banco (Lembrando que há transações de crédito e há de débito nas contas)--
+SELECT
+    co.numero AS 'Nº de conta',
+    ROUND(SUM(CASE WHEN descricao = 'depósito' THEN valor ELSE 0 END),2) AS "Ttl de depósitos",
+    ROUND(SUM(CASE WHEN descricao = 'saque' THEN valor ELSE 0 END),2) AS "Ttl de Saques",
+    ROUND(SUM(CASE WHEN descricao = 'pagar conta' THEN valor ELSE 0 END),2) AS "Ttl de Pgto. de Contas",
+    ROUND(SUM(CASE WHEN descricao = 'transferencia' THEN valor ELSE 0 END),2) AS "Ttl de transferências",
+    ROUND(SUM(CASE WHEN descricao = 'depósito' THEN valor ELSE 0 END)-SUM
+          (CASE WHEN descricao = 'saque' THEN valor ELSE 0 END)-SUM
+          (CASE WHEN descricao = 'pagar conta' THEN valor ELSE 0 END)+SUM
+          (CASE WHEN descricao = 'transferencia' THEN valor ELSE 0 END),2) AS "SALDO TOTAL"
+FROM transacao AS t
+JOIN tipo_transacao AS tt
+	ON t.id_tipo_transacao = tt.id
+JOIN cliente_conta AS cc
+        ON cc.id=t.id_cliente_conta
+JOIN conta AS co
+        ON co.id=cc.id_conta
+GROUP BY cc.id_conta
+ORDER BY cc.id_conta;
