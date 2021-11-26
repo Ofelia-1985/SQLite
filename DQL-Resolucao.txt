@@ -4,20 +4,20 @@
 SELECT cd.nome AS 'Dependente', cnd.nome AS 'Cliente' 
 FROM
 (
-SELECT cc1º.id_conta, cl1º.nome, cc1º.dependente
-FROM cliente_conta AS cc1º
-JOIN cliente AS cl1º
-ON cc1º.id_cliente = cl1º.id
-WHERE cc1º.dependente = 1
-ORDER BY cc1º.id_conta
+SELECT cc1.id_conta, cl1.nome, cc1.dependente
+FROM cliente_conta AS cc1
+JOIN cliente AS cl1
+ON cc1.id_cliente = cl1.id
+WHERE cc1.dependente = 1
+ORDER BY cc1.id_conta
 ) AS cd,
 (
-SELECT cc2º.id_conta, cl2º.nome, cc2º.dependente
-FROM cliente_conta AS cc2º
-JOIN cliente AS cl2º
-ON cc2º.id_cliente = cl2º.id
-WHERE cc2º.dependente = 0
-ORDER BY cc2º.id_conta
+SELECT cc2.id_conta, cl2.nome, cc2.dependente
+FROM cliente_conta AS cc2
+JOIN cliente AS cl2
+ON cc2.id_cliente = cl2.id
+WHERE cc2.dependente = 0
+ORDER BY cc2.id_conta
 ) AS cnd
 WHERE cd.id_conta = cnd.id_conta;
 
@@ -45,7 +45,7 @@ LIMIT 5;
 
 --3-- Consultando o saldo total das contas registradas no banco (Lembrando que há transações de crédito e há de débito nas contas)--
 SELECT
-    co.numero AS 'Nº de conta',
+    co.numero AS 'N de conta',
     ROUND(SUM(CASE WHEN descricao = 'depósito' THEN valor ELSE 0 END),2) AS "Ttl de depósitos",
     ROUND(SUM(CASE WHEN descricao = 'saque' THEN valor ELSE 0 END),2) AS "Ttl de Saques",
     ROUND(SUM(CASE WHEN descricao = 'pagar conta' THEN valor ELSE 0 END),2) AS "Ttl de Pgto. de Contas",
